@@ -56,18 +56,15 @@ def precios(nombre_acciones):
 
 def graficar_precios(precios, nombre_acciones):
     """
-    Función para graficar precios de acciones con paleta en azules.
+    Función para graficar precios de acciones con paleta arcoiris.
     :param precios: DataFrame con precios de cierre
     :return: gráfico de líneas
     """
-    # Paleta de azules (puedes ajustar los tonos si quieres más variedad)
-    blue_palette = [
-        "#0d47a1", "#1976d2", "#2196f3", "#42a5f5", "#64b5f6",
-        "#90caf9", "#1565c0", "#1e88e5", "#0288d1", "#039be5"
-    ]
+    # Paleta arcoiris (10 colores)
+    rainbow_palette = px1.colors.sample_colorscale("rainbow", [i/9 for i in range(10)])
     fig = go.Figure()
     for i, accion in enumerate(nombre_acciones):
-        color = blue_palette[i % len(blue_palette)]
+        color = rainbow_palette[i % len(rainbow_palette)]
         fig.add_trace(go.Scatter(
             x=precios.index,
             y=precios[accion],
@@ -182,7 +179,7 @@ def informacion_activos(precios, pesos_wi_rd, monto, nombre_acciones):
     # Cambiar el nombre del índice
     df_port_RD_activo.index.name = "Valuación diaria"
 
-    return df_port_RD_activo, VaR_Par, val_activos, uso_VaR_RD, pos_activos, rend_activos_pct, riesgo_activos
+    return df_port_RD_activo, VaR_Par, val_activos, uso_VaR_RD, pos_activos, rend_activos, riesgo_activos
 
 def informacion_portafolio(precios, pesos_wi_rd, monto, VaR_Par, val_activos, uso_VaR_RD):
     # Calculamos los rendimientos logarítmicos
@@ -261,6 +258,7 @@ def graficar_rendimientos(precios, accion, pos_activo, nombre_acciones, var_dine
     multiplicando el rendimiento logarítmico por el monto invertido (pos_activo).
     Agrega una línea horizontal roja en -VaR y puntos rojos donde el rendimiento es menor al VaR.
     Muestra en la leyenda el número y porcentaje de veces que el rendimiento fue menor al VaR.
+    Usa un solo color fijo para la línea.
     :param precios: DataFrame con precios de cierre
     :param accion: str, ticker de la acción
     :param pos_activo: np.array con posiciones en dinero para cada acción (mismo orden que nombre_acciones)
@@ -268,8 +266,10 @@ def graficar_rendimientos(precios, accion, pos_activo, nombre_acciones, var_dine
     :param var_dinero: np.array con VaR en dinero para cada acción (mismo orden que nombre_acciones)
     :return: figura de plotly
     """
-    rendimientos = np.log(precios[accion] / precios[accion].shift(1)).dropna()
+    color_line = "#0e53dc"  # Color fijo
+
     idx = nombre_acciones.index(accion)
+    rendimientos = np.log(precios[accion] / precios[accion].shift(1)).dropna()
     rendimientos_dinero = rendimientos * pos_activo[idx]
     var_val = -1 * var_dinero[idx]
 
@@ -285,7 +285,7 @@ def graficar_rendimientos(precios, accion, pos_activo, nombre_acciones, var_dine
         y=rendimientos_dinero,
         mode='lines',
         name=f"Rendimientos en dinero {accion}",
-        line=dict(color='rgba(0, 123, 255, 0.7)')
+        line=dict(color=color_line)
     ))
     # Línea horizontal roja en -VaR
     fig.add_shape(
@@ -294,7 +294,7 @@ def graficar_rendimientos(precios, accion, pos_activo, nombre_acciones, var_dine
         x1=rendimientos_dinero.index[-1],
         y0=var_val,
         y1=var_val,
-        line=dict(color="red", width=2, dash="dash"),
+        line=dict(color="#f35959", width=2, dash="dash"),
         xref="x",
         yref="y"
     )
@@ -304,7 +304,7 @@ def graficar_rendimientos(precios, accion, pos_activo, nombre_acciones, var_dine
         y=rendimientos_dinero[mask],
         mode='markers',
         name=f"Menor a -VaR: {num_menores} veces ({porcentaje:.2f}%)",
-        marker=dict(color='red', size=8, symbol='circle')
+        marker=dict(color="#ff0000", size=8, symbol='circle')
     ))
     fig.update_layout(
         title=f"Rendimientos Logarítmicos en Dinero - {accion}",
@@ -343,15 +343,15 @@ def graficar_histograma_log(precios, accion, pos_activo, var_dinero, nombre_acci
     fig.add_trace(go.Histogram(
         x=mayores,
         nbinsx=60,
-        marker_color='blue',
-        opacity=0.75,
+        marker_color="#0452b9",  # azul claro
+        opacity=0.85,
         name='>= VaR'
     ))
     fig.add_trace(go.Histogram(
         x=menores,
         nbinsx=60,
         marker_color='red',
-        opacity=0.75,
+        opacity=0.85,
         name='< VaR'
     ))
 
@@ -468,7 +468,7 @@ def graficar_boxplot_rendimientos(precios, pos_activos, nombre_acciones, accion)
         x="Rendimiento en Dinero",
         y="Acción",
         points="all",
-        color_discrete_sequence=["skyblue"],
+        color_discrete_sequence=["#1244b9"],  # azul claro
         title=f"Boxplot Horizontal de Rendimientos Logarítmicos en Dinero - {accion}"
     )
     fig.update_layout(
@@ -500,7 +500,7 @@ def graficar_rendimientos_portafolio(precios, pesos_wi_rd, monto):
         y=rend_dinero,
         mode='lines',
         name='Rendimiento diario en dinero',
-        line=dict(color='navy')
+        line=dict(color="#1244b9")
     ))
     fig.update_layout(
         title="Rendimientos Históricos del Portafolio en Dinero",
@@ -528,7 +528,7 @@ def graficar_rendimiento_acumulado(precios, pesos_wi_rd, monto):
         y=valor_portafolio,
         mode='lines',
         name='Valuación del portafolio',
-        line=dict(color='green')
+        line=dict(color="#2357d0")
     ))
     fig.update_layout(
         title="Valuación Histórica del Portafolio",
@@ -561,20 +561,20 @@ def graficar_histograma_portafolio(precios, pesos_wi_rd, monto, VaR_portafolio):
     menores = rend_dinero_portafolio[rend_dinero_portafolio < var_val]
     mayores = rend_dinero_portafolio[rend_dinero_portafolio >= var_val]
 
-    # Crear histograma con dos colores
+    # Crear histograma con dos colores (igual que el histograma de arriba: azul claro y rojo)
     fig = go.Figure()
     fig.add_trace(go.Histogram(
         x=mayores,
         nbinsx=60,
-        marker_color='blue',
-        opacity=0.75,
+        marker_color="#0452b9",  # azul claro
+        opacity=0.85,
         name='>= VaR'
     ))
     fig.add_trace(go.Histogram(
         x=menores,
-        nbinsx=80,
+        nbinsx=60,
         marker_color='red',
-        opacity=0.75,
+        opacity=0.85,
         name='< VaR'
     ))
 
@@ -673,8 +673,8 @@ def graficar_var_rolling_portafolio(precios, pesos_wi_rd, monto, window=504, niv
     rend_port_diario_dinero = rendimientos.dot(pesos_wi_rd) * monto
     rend_window = rend_port_diario_dinero[window:]
 
-    # Violaciones al VaR
-    violaciones_mask = var_rolling_series > rend_window
+    # Violaciones al VaR (cuando el rendimiento es menor al VaR negativo)
+    violaciones_mask = rend_window < var_rolling_series
     violaciones = violaciones_mask.sum()
     violaciones_porcentaje = round((violaciones / len(rend_window)) * 100, 2)
     violaciones_reales = rend_window[violaciones_mask]
@@ -720,14 +720,13 @@ def graficar_simulacion_portafolio(
     """
     Grafica la simulación de portafolios aleatorios en el espacio riesgo-rendimiento.
     Marca el portafolio de rendimiento deseado y el de mínimo riesgo.
+    Colorea los puntos según el índice de Sharpe considerando la tasa CETES.
     :param nombre_acciones: lista de tickers
     :param rendimientos: DataFrame de rendimientos logarítmicos
     :param esperanza_activo: array/serie de esperanzas de cada activo
     :param tasa_cetes: tasa libre de riesgo anualizada (decimal)
     :param var_port_rend_dado: varianza del portafolio de rendimiento deseado (decimal)
     :param esp_port_rend_dado: esperanza del portafolio de rendimiento deseado (decimal)
-    :param var_port_min_riesgo: varianza del portafolio de mínimo riesgo (decimal)
-    :param esp_port_min_riesgo: esperanza del portafolio de mínimo riesgo (decimal)
     :param num_simulaciones: número de portafolios aleatorios a simular
     :return: figura de plotly
     """
@@ -749,30 +748,39 @@ def graficar_simulacion_portafolio(
 
     VARs = []
     RENs = []
+    Sharpes = []
 
     for i in range(len(pesos_ws)):
         W = pesos_ws.iloc[i].values.astype(float)
         var = np.sqrt(varianza_portafolio(W, MVCV) * 252) * 100
-        ren = rendimiento_portafolio(W, RI) * 252
+        ren = rendimiento_portafolio(W, RI) * 252 * 100
+        sharpe = (ren/100 - tasa_cetes) / (var / 100) if var > 0 else np.nan
         VARs.append(var)
         RENs.append(ren)
+        Sharpes.append(sharpe)
 
-    df_Tasas = pd.DataFrame(list(zip(VARs, RENs)), columns=['% Desviación', '% Rendimiento'])
+    df_Tasas = pd.DataFrame(list(zip(VARs, RENs, Sharpes)), columns=['% Desviación', '% Rendimiento', 'Sharpe'])
 
     fig = px1.scatter(
         df_Tasas,
         x='% Desviación',
         y='% Rendimiento',
+        color='Sharpe',
+        color_continuous_scale='Viridis',  # Cambia la escala de color aquí
         title="Simulación de portafolios",
-        opacity=0.5
+        opacity=0.7
     )
+    # Oculta la barra de color (leyenda del Sharpe)
+    fig.update_coloraxes(showscale=False)
+
     # Portafolio de rendimiento deseado (último-1)
+    sharpe_rd = (esp_port_rend_dado*252 - tasa_cetes) / (var_port_rend_dado * np.sqrt(252) if var_port_rend_dado > 0 else np.nan)
     fig.add_trace(go.Scatter(
         x=[var_port_rend_dado * 100 * np.sqrt(252)],
         y=[esp_port_rend_dado * 100 * 252],
         mode='markers',
-        marker=dict(color='purple', size=10),
-        name="Portafolio de rendimiento deseado"
+        marker=dict(color="#ff0202", size=10),
+        name=f"Portafolio de rendimiento deseado<br>Sharpe: {sharpe_rd:.2f}"
     ))
     # Tasa CETES (primer punto extra)
     fig.add_trace(go.Scatter(
@@ -786,6 +794,7 @@ def graficar_simulacion_portafolio(
     fig.update_layout(
         xaxis_title='% Desviación (Riesgo Anualizado)',
         yaxis_title='% Rendimiento Anualizado',
-        legend_title="Portafolios"
+        legend_title="Portafolios",
+        yaxis=dict(range=[0, max(df_Tasas["% Rendimiento"])+5])  # <-- Aquí se fuerza a que el eje y empiece en 0
     )
     return fig
