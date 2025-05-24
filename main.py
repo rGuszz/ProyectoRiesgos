@@ -16,7 +16,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-
 st.title("Portafolio de rendimiento deseado")
 tab1, tab2, tab3, tab4, tab6, tab7, tab8, tab9 = st.tabs(["Acciones escenario normal", "Portafolio escenario normal", "Simulación de Portafolios escenario normal", "Backtesting escenario normal", "Escenario COVID-19 Acciones", "Escenario COVID-19 Portafolio", "Escenario COVID-19 Backtesting", "Backtesting general"])
 
@@ -139,7 +138,7 @@ with tab3:
         num_sim = st.number_input("Número de simulaciones", min_value=10, max_value=30000, step=100, value=10)
         # Simulación de portafolios
         fig = fn.graficar_simulacion_portafolio(nombre_acciones, rendimientos, esperanza_activo, tasa_cetes=0.0837, var_port_rend_dado=var_port_rend_dado, esp_port_rend_dado=esp_port_rend_dado, num_simulaciones=num_sim)
-        st.plotly_chart(fig, use_container_width=True, height=600)
+        st.plotly_chart(fig, use_container_width=True)
     fragment()
 
 with tab4:
@@ -181,7 +180,7 @@ with tab6:
         "NVDA",  # NVIDIA Corporation (Tecnología)
         "WMT"    # Walmart Inc. (Retail)
     ]
-    precios_cov = fn.precios_periodo_fechas(nombre_acciones, "2020-3-11", "2023-5-14")
+    precios_cov = fn.precios_periodo_fechas(nombre_acciones, "2020-1-1", "2023-5-14")
     precios_ordenados_cov = precios_cov.sort_index(ascending=False)
     pesos = [0.023531, 0.063926, 0.18491, 0.095493, 0.040738, 0.034043, 0.084526, 0.253479, 0.067492, 0.151863]
     monto = 10000
@@ -331,4 +330,3 @@ with tab9:
         fig4 = fn.graficar_var_rolling_portafolio(precios4y_cov, pesos, monto, window, conf)
         st.plotly_chart(fig4, use_container_width=True)
     fragmento()
-
